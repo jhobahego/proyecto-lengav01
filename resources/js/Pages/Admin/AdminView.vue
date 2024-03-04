@@ -80,8 +80,6 @@ import Modal from '../../Components/Modal.vue';
 import EventForm from '../../Components/EventForm.vue';
 import type CalendarOptions from '@fullcalendar/vue3'
 
-import 'v-calendar/style.css';
-
 
 enum activity_type {
   'online',
