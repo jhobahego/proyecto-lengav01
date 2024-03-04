@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -28,7 +29,7 @@ class AdminController extends Controller
             ];
         });
 
-        // return inertia('Admin/AdminView', compact('events'));
+        return inertia('Admin/AdminView', compact('events'));
     }
 
     /**

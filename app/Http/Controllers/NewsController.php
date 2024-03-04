@@ -12,7 +12,10 @@ class NewsController extends Controller
      */
     public function index()
     {
-        //
+        $news = News::all();
+        return inertia('NewsView', [
+            'news' => $news
+        ]);
     }
 
     /**
