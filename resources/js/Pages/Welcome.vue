@@ -4,9 +4,7 @@ import Index from '../Components/Index.vue';
 
 defineProps({
   canLogin: Boolean,
-  canRegister: Boolean,
-  laravelVersion: String,
-  phpVersion: String,
+  canRegister: Boolean
 });
 
 </script>
@@ -15,7 +13,7 @@ defineProps({
   <Head title="SUIS" />
   <div
     class="relative sm:flex sm:justify-center sm:items-center min-h-screen bg-center selection:bg-red-500 selection:text-white">
-    <nav class="nav-bg sm:fixed sm:top-0 sm:right-0 sm:left-0 p-8">
+    <nav class="nav-bg z-50 sm:fixed sm:top-0 sm:right-0 sm:left-0 p-8">
       <div v-if="canLogin" class="sm:fixed sm:top-0 sm:right-0 p-6 text-right">
         <template v-if="$page.props.auth.user !== undefined">
           <Link :href="route('login')"
