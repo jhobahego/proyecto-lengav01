@@ -42,7 +42,7 @@
       </article>
 
       <article>
-        <h2 class="text-xl md:text-2xl font-bold mb-2">Galería de imagenes sobre encuentros en los que ha participado
+        <h2 class="text-center text-xl md:text-2xl font-bold mb-4">Galería de imagenes sobre encuentros en los que ha participado
           nuestro semillero</h2>
         <Carousel :slides="slides" :interval="4000" controls indicators />
       </article>
