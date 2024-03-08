@@ -28,7 +28,19 @@ class EventController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $event = new Event();
+        $event->user_id = $request->manager;
+        $event->title = $request->title;
+        $event->description = $request->description;
+        $event->activity_type = $request->activity_type;
+        $event->link = $request->link;
+        $event->location = $request->location;
+        $event->start_date = $request->start;
+        $event->end_date = $request->end;
+        $event->duration = $request->duration;
+        $event->color = $request->color;
+
+        $event->save();
     }
 
     /**
@@ -52,7 +64,17 @@ class EventController extends Controller
      */
     public function update(Request $request, Event $event)
     {
-        //
+        $event->user_id = $request->manager;
+        $event->title = $request->title;
+        $event->description = $request->description;
+        $event->activity_type = $request->activity_type;
+        $event->link = $request->link;
+        $event->location = $request->location;
+        $event->start_date = $request->start;
+        $event->end_date = $request->end;
+        $event->duration = $request->duration;
+        $event->color = $request->color;
+        $event->save();
     }
 
     /**
@@ -60,6 +82,6 @@ class EventController extends Controller
      */
     public function destroy(Event $event)
     {
-        //
+        $event->delete();
     }
 }
