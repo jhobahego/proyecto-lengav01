@@ -1,11 +1,6 @@
 <template>
   <section class="max-w-5xl mx-auto mt-10">
     <header>
-      <div v-if="errors.length > 0" class="bg-red-500 text-white rounded-md p-2">
-        <ul>
-          <li v-for="error in errors" :key="error" class="nav-item">{{ error }}</li>
-        </ul>
-      </div>
       <h1 class="text-4xl font-bold text-center">Edición de proyecto</h1>
     </header>
     <form @submit.prevent="submitForm(project.id)" class="form-projects rounded-lg flex flex-col items-center p-7">
@@ -26,7 +21,7 @@
           class="flex flex-col w-full mb-3">
           #{{ index + 1 }} objetivo general
           <textarea class="rounded-lg mt-1" v-model="formData.general_objectives[index]"
-            placeholder="Escribe tu objetivo general..." :id="`general-${index}`"></textarea>
+            placeholder="Escribe tu objetivo general..." :id="`general-${index}`">{{ obj }}</textarea>
         </label>
 
         <div class="flex items-center gap-2">
@@ -57,8 +52,9 @@
 
       <label for="project_type" class="flex flex-col w-full mb-3">Tipo de proyecto
         <select v-model="formData.project_type" class="rounded-lg mt-1" id="project_type" name="project_type">
-          <option v-for="(obj, index) of projectTypes" :key="index" :selected="obj === formData.project_type"
-            :value="obj">{{ obj }}</option>
+          <option v-for="(obj, index) of projectTypes" :key="index" :value="obj"
+            :selected="obj === formData.project_type">{{ obj }}
+          </option>
         </select>
       </label>
 
@@ -69,7 +65,10 @@
       </label>
 
       <label for="manager" class="flex flex-col w-full mb-3">Responsable
-        <input v-model="formData.manager" type="number" class="rounded-lg mt-1" id="manager" name="manager">
+        <select v-model="formData.manager" class="rounded-lg mt-1" id="manager" name="manager">
+          <option v-for="user in users" :key="user.id" :value="user.id" :selected="user.id === formData.manager">{{
+      user.name }}</option>
+        </select>
       </label>
 
       <label for="start_date" class="flex flex-col w-full mb-3">Fecha de inicio
@@ -81,16 +80,20 @@
       </label>
 
       <label for="project_link" class="flex flex-col w-full mb-3">Enlace del proyecto
-        <input v-model="formData.project_link" type="text" class="rounded-lg mt-1" id="project_link" name="project_link">
+        <input v-model="formData.project_link" type="text" class="rounded-lg mt-1" id="project_link"
+          name="project_link">
       </label>
 
       <label for="portrait_url" class="flex flex-col w-full mb-3">URL de la imagen
-        <input v-model="formData.portrait_url" type="text" class="rounded-lg mt-1" id="portrait_url" name="portrait_url">
+        <input v-model="formData.portrait_url" type="text" class="rounded-lg mt-1" id="portrait_url"
+          name="portrait_url">
       </label>
 
-      <button type="submit" class="bg-blue-700 text-white rounded-md mt-3 p-3 font-bold text-lg">Editar proyecto</button>
-      <button type="button" @click="emit('showModal', 'show')" class="btn-delete text-white p-2 m-3 rounded-md">Cancelar
-        formulario</button>
+      <button type="submit" class="bg-blue-700 text-white rounded-md mt-3 p-3 font-bold text-lg">Editar
+        proyecto</button>
+      <button type="button" @click="emit('showModal', 'show')"
+        class="cursor-pointer border-none bg-[#dc3545] text-white p-2 m-3 rounded-md">Cancelar
+        edición</button>
     </form>
   </section>
 </template>
@@ -98,49 +101,20 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import { type User, type Project } from '../../types/types.d';
 
-// const user = usePage().props.auth.user;
-// console.log(user);
+const props = defineProps<{
+  project: Project;
+  users: User[];
+}>();
 
-const props = defineProps({
-  project: {
-    type: Object as () => Project,
-    required: true,
-  },
+let formData = ref<Project>({
+  ...props.project,
+  end_date: formatDates(props.project.end_date),
+  start_date: formatDates(props.project.start_date)
 });
 
-let formData = useForm({
-  title: '',
-  description: '',
-  general_objectives: [''],
-  specific_objectives: [''],
-  project_type: 'INVESTIGACION',
-  project_status: 'PENDIENTE',
-  manager: -1,
-  start_date: '',
-  end_date: '',
-  project_link: '',
-  portrait_url: '',
-  remember: false,
-});
-
-interface Project {
-  id: number;
-  title: string;
-  description: string;
-  general_objectives: string[];
-  specific_objectives: string[];
-  portrait_url: string;
-  project_type: string;
-  manager: number;
-  start_date: string;
-  end_date: string;
-  project_status: string;
-  project_link: string;
-}
-
-const errors = ref([]);
-const projectTypes = ref(['INNOVACION', 'INVESTIGACION', 'EXTENSION', 'EMPRENDIMIENTO']);
+const projectTypes = ref(['INNOVACIÓN', 'INVESTIGACIÓN', 'EXTENSIÓN', 'EMPRENDIMIENTO']);
 const projectStatus = ref(["EN_CURSO", "FINALIZADO", "PENDIENTE"]);
 
 type Action = 'create' | 'edit' | 'show';
@@ -148,54 +122,54 @@ type Action = 'create' | 'edit' | 'show';
 
 const emit = defineEmits({
   showModal: (act: Action) => true,
+  updateItem: (val: Project) => val,
 });
 
-async function submitForm(id: number) {
-  formData.put(`projects/${id}`, {
-    onFinish: () => {
-      formData.reset('title', 'description', 'general_objectives', 'specific_objectives', 'project_type', 'project_status', 'manager', 'start_date', 'end_date', 'project_link', 'portrait_url');
+function submitForm(id: number) {
+  const form = useForm(formData.value);
 
-      emit('showModal', 'show');
-    },
-  });
+  emit('updateItem', formData.value)
+
+  form.put(`projects/${id}`), {
+    onFinish: () => {
+      form.reset('title', 'description', 'general_objectives', 'specific_objectives', 'project_type', 'project_status', 'manager', 'start_date', 'end_date', 'project_link', 'portrait_url');
+    }
+  };
+
+  emit('showModal', 'show');
 }
 
 function addGeneralObjective() {
-  formData.general_objectives.push('');
+  formData.value.general_objectives.push('');
 }
 
 function removeGeneralObjective() {
-  if (formData.general_objectives.length > 1) {
-    formData.general_objectives.pop();
+  if (formData.value.general_objectives.length > 1) {
+    formData.value.general_objectives.pop();
   }
 }
 
 function addSpecificObjective() {
-  formData.specific_objectives.push('');
+  formData.value.specific_objectives.push('');
 }
 
 function removeSpecificObjective() {
-  if (formData.specific_objectives.length > 1) {
-    formData.specific_objectives.pop();
+  if (formData.value.specific_objectives.length > 1) {
+    formData.value.specific_objectives.pop();
   }
 }
 
 function mapProjectToFormData(project: Project) {
+  formData.value = { ...project };
+
   const general_objectives = JSON.parse(JSON.stringify(project.general_objectives));
   const specific_objectives = JSON.parse(JSON.stringify(project.specific_objectives));
 
-  formData.general_objectives = JSON.parse(general_objectives);
-  formData.specific_objectives = JSON.parse(specific_objectives);
+  formData.value.general_objectives = JSON.parse(general_objectives);
+  formData.value.specific_objectives = JSON.parse(specific_objectives);
 
-  formData.title = project.title;
-  formData.description = project.description;
-  formData.project_type = project.project_type;
-  formData.project_status = project.project_status;
-  formData.manager = project.manager;
-  formData.start_date = formatDates(project.start_date);
-  formData.end_date = formatDates(project.end_date);
-  formData.project_link = project.project_link;
-  formData.portrait_url = project.portrait_url;
+  formData.value.start_date = project.start_date !== null ? formatDates(project.start_date) : null;
+  formData.value.end_date = project.end_date !== null ? formatDates(project.end_date) : null;
 }
 
 function formatDates(date: string) {
@@ -208,8 +182,6 @@ function formatDates(date: string) {
 
 onMounted(() => {
   mapProjectToFormData(props.project);
-  const projectType = props.project.project_type;
-  console.log(projectType);
 });
 </script>
 
@@ -226,19 +198,5 @@ onMounted(() => {
 .form-projects>button {
   width: 80%;
   margin: 0 auto;
-}
-
-.btn-delete {
-  background: #dc3545;
-  border: none;
-  cursor: pointer;
-}
-
-.input_error {
-  border: 1px solid #dc3545;
-}
-
-.label_error {
-  color: #dc3545;
 }
 </style>
