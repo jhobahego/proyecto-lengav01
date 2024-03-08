@@ -1,5 +1,5 @@
 <template>
-  <AppLayout title="Dashboard">
+  <AppLayout title="Panel de administración">
     <template #header>
       <div class="overflow-hidden h-48 w-full bg-cover flex flex-col items-center justify-center">
         <h1 class="font-bold text-6xl text-[#00447b] leading-tight text-center">
@@ -11,8 +11,12 @@
 
     <div class="py-12 relative">
       <Modal :show="shomModal" :max-width="'lg'" :closeable="true" @close="closeModal">
-        <EventForm :title="`Edicion de evento ${selectedEvent?.title}`" :submit-text="'Editar'" :event="selectedEvent"
-          @close-modal="closeModal"
+        <EditEvent v-if="submitAction === 'edit'" :users="props.users" :event="selectedEvent" @close-modal="closeModal"
+          @update-item="updateItem" @delete-item="deleteItem"
+          class="edit-form opacity-85 p-10 border border-blue-500 rounded-md flex flex-col items-center gap-y-3" />
+
+        <CreateEvent v-else :users="props.users" :date-selected="selectedDate" @close-modal="closeModal"
+          @add-item="addItem"
           class="edit-form opacity-85 p-10 border border-blue-500 rounded-md flex flex-col items-center gap-y-3" />
       </Modal>
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
@@ -22,7 +26,8 @@
               height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none"
               stroke-linecap="round" stroke-linejoin="round">
               <path stroke="none" d="M0 0h24v24H0z" fill="none"></path>
-              <path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6"></path>
+              <path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6">
+              </path>
               <path d="M9 17v1a3 3 0 0 0 6 0v-1"></path><span id="notificationItems"><span
                   data-count-unseen="3"></span></span>
             </svg>
@@ -39,19 +44,21 @@
             <div class="card mb-14 md:mb-10">
               <h3 class="text-2xl">Gestionar usuarios</h3>
               <img src="/img/admin/gestionarUser.png" alt="Dos manos con usuario">
-              <a href="/views/admin/users/manage-users.html"
-                class="px-2 py-1 bg-[#00447b] font-bold text-xl text-white rounded-md mt-6" id="manageUserBtn">Click
-                aquí</a>
+              <button class="px-2 py-1 bg-[#00447b] font-bold text-xl text-white rounded-md mt-6"
+                id="manageUserBtn">Click
+                aquí</button>
             </div>
             <div class="card mb-14 md:mb-10">
               <h3 class="text-2xl">Gestionar Proyectos</h3>
               <img src="/img/admin/productos.png" alt="Una persona sosteniendo una caja">
-              <button class="px-2 py-1 bg-[#00447b] font-bold text-xl text-white rounded-md mt-6">click aquí</button>
+              <button class="px-2 py-1 bg-[#00447b] font-bold text-xl text-white rounded-md mt-6">click
+                aquí</button>
             </div>
             <div class="card mb-14 md:mb-10">
               <h3 class="text-xl">Configuraciones del sitio</h3>
               <img src="/img/admin/config.png" alt="Una imagen de un browser con 2 tuercas en el centro">
-              <button class="px-2 py-1 bg-[#00447b] font-bold text-xl text-white rounded-md mt-6">Click aquí</button>
+              <button class="px-2 py-1 bg-[#00447b] font-bold text-xl text-white rounded-md mt-6">Click
+                aquí</button>
             </div>
           </div>
 
@@ -77,77 +84,97 @@ import FullCalendar from '@fullcalendar/vue3';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import Modal from '../../Components/Modal.vue';
-import EventForm from '../../Components/EventForm.vue';
-import type CalendarOptions from '@fullcalendar/vue3'
+import EditEvent from '../../Components/Events/EditEvent.vue';
+import CreateEvent from '../../Components/Events/CreateEvent.vue';
+import { type User, type Event } from '../../types/types.d';
 
-
-enum activity_type {
-  'online',
-  'in-person',
-  'hybrid'
-}
-
-interface Event {
-  id: number;
-  title: string;
-  manager: string;
-  description: string;
-  activity_type: activity_type;
-  link?: string;
-  location: string;
-  start: string;
-  end?: string;
-  duration: string;
-  color: string;
-}
 
 const props = defineProps({
   events: {
     type: Array as () => Event[],
     required: true,
   },
+  users: {
+    type: Array as () => User[],
+    required: true,
+  },
 });
 
-const events: Ref<Event[]> = ref([]);
+const events: Ref<Event[]> = ref(props.events);
 const selectedEvent = ref<Event>();
 const shomModal = ref(false);
+const selectedDate = ref('');
+const submitAction = ref<'add' | 'edit'>('add')
 
 const calendarOptions = {
   plugins: [dayGridPlugin, interactionPlugin],
   initialView: 'dayGridMonth',
   dateClick: handleDateClick,
   eventClick: handleEventClick,
-  events: props.events,
+  events: events.value
 }
 
 function handleDateClick(info) {
-  const dateSelected = new Date(info.dateStr);
+  submitAction.value = 'add';
+  selectedDate.value = info.dateStr;
+  openModal(info);
+}
 
-  // Formato para input de tipo datetime-locale
-  const localeDate = dateSelected.toISOString().slice(0, 16);
+function addItem(event: Event) {
+  events.value.push(event);
+  window.location.reload();
+}
+
+function handleEventClick(info) {
+  submitAction.value = 'edit';
 
   openModal(info);
 }
 
-function handleEventClick(info) {
-  openModal(info);
+function updateItem(event: Event) {
+  const index = events.value.findIndex((e: Event) => e.title === event.title);
+  events.value[index] = event;
+  window.location.reload();
+}
+
+function deleteItem(id: number) {
+  events.value = events.value.filter((e: Event) => e.id !== id);
+  window.location.reload();
 }
 
 function openModal(info) {
   shomModal.value = true;
-  console.log({ info });
 
-  const event = events.value.find((e) => e.title === info.event.title);
-  selectedEvent.value = event;
+  if (submitAction.value === 'edit') {
+    const event = events.value.find((e: Event) => e.title === info.event.title);
+    selectedEvent.value = event;
+  }
 }
 
 function closeModal(value: boolean) {
   shomModal.value = !value;
 }
 
+function formatDate(dateString: string) {
+  if (dateString?.length === 0 || dateString === null) return dateString;
+
+  const date = new Date(dateString);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 onMounted(() => {
-  events.value = props.events;
-  console.log({ eventos: props.events });
+  events.value = props.events.map((event: Event) => {
+    event.start = formatDate(event.start);
+    event.end = formatDate(event.end);
+    return event;
+  });
 });
 </script>
 
@@ -180,11 +207,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-/* Calendario */
-.calendar :deep(.vc-container, .vc-pane-container) {
-  margin: 30px auto;
 }
 
 .edit-form {
