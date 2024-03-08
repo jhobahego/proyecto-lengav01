@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AboutController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\EventController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ProjectController;
 use Illuminate\Foundation\Application;
@@ -43,4 +44,5 @@ Route::middleware($middlewareGroup)->group(function () {
     Route::resource('/projects', ProjectController::class);
     Route::resource('/admin', AdminController::class);
     Route::resource('/about', AboutController::class);
+    Route::resource('/events', EventController::class);
 });
