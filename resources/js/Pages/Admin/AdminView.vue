@@ -87,6 +87,7 @@ import Modal from '../../Components/Modal.vue';
 import EditEvent from '../../Components/Events/EditEvent.vue';
 import CreateEvent from '../../Components/Events/CreateEvent.vue';
 import { type User, type Event } from '../../types/types.d';
+import Swal from 'sweetalert2';
 
 
 const props = defineProps({
@@ -120,26 +121,31 @@ function handleDateClick(info) {
   openModal(info);
 }
 
-function addItem(event: Event) {
-  events.value.push(event);
-  window.location.reload();
-}
-
 function handleEventClick(info) {
   submitAction.value = 'edit';
 
   openModal(info);
 }
+function addItem(event: Event) {
+  events.value.push(event);
+  Swal.fire('Éxito', 'El evento se ha añadido correctamente', 'success').then(() => {
+    window.location.reload();
+  });
+}
 
 function updateItem(event: Event) {
   const index = events.value.findIndex((e: Event) => e.title === event.title);
   events.value[index] = event;
-  window.location.reload();
+  Swal.fire('Éxito', 'El evento se ha actualizado correctamente', 'success').then(() => {
+    window.location.reload();
+  });
 }
 
 function deleteItem(id: number) {
   events.value = events.value.filter((e: Event) => e.id !== id);
-  window.location.reload();
+  Swal.fire('Éxito', 'El evento se ha eliminado correctamente', 'success').then(() => {
+    window.location.reload();
+  });
 }
 
 function openModal(info) {

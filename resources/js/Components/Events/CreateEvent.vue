@@ -49,6 +49,7 @@
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { type Event, activity_type, type User } from '../../types/types.d';
+import Swal from 'sweetalert2';
 
 const props = defineProps<{
   users: User[]
@@ -79,28 +80,51 @@ function setCloseModal() {
 }
 
 function submitForm() {
-  form.value.start = form.value.start.length === 0 ? "" : formatDate(form.value.start);
-  form.value.end = form.value.end.length === 0 ? "" : formatDate(form.value.end);
   const formData = useForm({
     ...form.value,
     remember: false
   });
 
-  emit('addItem', formData);
+  Swal.fire({
+    title: 'Detalles del evento',
+    html: `
+      <p>Vas a crear un evento con los siguientes detalles:</p>
+      <ul>
+        <li><strong>Titulo:</strong> ${form.value.title}</li>
+        <li><strong>Fecha de inicio:</strong> ${form.value.start}</li>
+        <li><strong>Ubicación:</strong> ${form.value.location}</li>
+        <li><strong>Duración:</strong> ${form.value.duration} minutos</li>
+        <li><strong>Encargado:</strong> ${props.users.find(user => user.id === form.value.manager)?.name}</li>
+      </ul>
+    `,
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, crear evento',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      form.value.start = form.value.start.length === 0 ? "" : formatDate(form.value.start);
+      form.value.end = form.value.end.length === 0 ? "" : formatDate(form.value.end);
 
-  formData.post('events', {
-    onFinish: () => {
-      formData.reset('title', 'description', 'activity_type', 'manager', 'start', 'end', 'link', 'location', 'duration', 'color');
-      setCloseModal();
-    },
+      formData.post('events', {
+        onFinish: () => {
+          formData.reset('title', 'description', 'activity_type', 'manager', 'start', 'end', 'link', 'location', 'duration', 'color');
+          emit('addItem', formData);
+          setCloseModal();
+        },
+      });
+    }
   });
 }
+
 
 function formatDate(stringDate: string) {
   const date = new Date(stringDate);
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0'); // Se suma 1 ya que los meses van de 0 a 11
-  const day = String(date.getDate()).padStart(2, '0');
+  const day = String(date.getDate() + 1).padStart(2, '0');
   const hours = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');

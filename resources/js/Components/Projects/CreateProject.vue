@@ -95,6 +95,7 @@
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { type Project, type User } from '@/types/types';
+import Swal from 'sweetalert2';
 
 let formData = useForm({
   id: 0,
@@ -140,17 +141,43 @@ const emit = defineEmits({
   addItem: (val: Project) => val,
 });
 
-async function submitForm() {
-  emit('addItem', form.value);
-
-  await useForm(form.value).post('projects', {
-    onFinish: () => {
-      formData.reset('title', 'description', 'general_objectives', 'specific_objectives', 'project_type', 'project_status', 'manager', 'start_date', 'end_date', 'project_link', 'portrait_url');
-    },
+function submitForm() {
+  Swal.fire({
+    title: 'Detalles del proyecto a crear',
+    html: `
+      <p>Vas a crear un proyecto con los siguientes detalles:</p>
+      <ul>
+        <li><strong>Titulo:</strong> ${form.value.title}</li>
+        <li><strong>Descripcion:</strong> ${form.value.description}</li>
+        <li><strong>Objetivos generales:</strong> ${form.value.general_objectives.join(', ')}</li>
+        <li><strong>Objetivos específicos:</strong> ${form.value.specific_objectives.join(', ')}</li>
+        <li><strong>Tipo de proyecto:</strong> ${form.value.project_type}</li>
+        <li><strong>Estado del proyecto:</strong> ${form.value.project_status}</li>
+        <li><strong>Responsable:</strong> ${props.users.find(user => user.id === form.value.manager)?.name}</li>
+        <li><strong>Fecha de inicio:</strong> ${form.value.start_date}</li>
+        <li><strong>Fecha de finalización:</strong> ${form.value.end_date}</li>
+        <li><strong>Enlace del proyecto:</strong> ${form.value.project_link}</li>
+        <li><strong>URL de la imagen:</strong> ${form.value.portrait_url}</li>
+      </ul>
+    `,
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, crear proyecto',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      useForm(form.value).post('projects', {
+        onFinish: () => {
+          formData.reset('title', 'description', 'general_objectives', 'specific_objectives', 'project_type', 'project_status', 'manager', 'start_date', 'end_date', 'project_link', 'portrait_url');
+          emit('showModal', 'show');
+        },
+      });
+    }
   });
-
-  emit('showModal', 'show');
 }
+
 
 function addGeneralObjective() {
   form.value.general_objectives.push('');

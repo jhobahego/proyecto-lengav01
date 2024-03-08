@@ -52,6 +52,7 @@
 import { ref, Ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { type Event, type User } from '../../types/types.d';
+import Swal from 'sweetalert2';
 
 
 const props = defineProps<{
@@ -74,21 +75,33 @@ let form: Ref<Event> = ref<Event>({
   id: 0
 });
 
+
 function submitForm(id: number) {
-  const formData = useForm({
-    ...form.value,
-    remember: false
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: 'Vas a modificar este evento',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, modificar',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const formData = useForm({
+        ...form.value,
+        remember: false
+      });
+
+      formData.put(`events/${id}`, {
+        onFinish: () => {
+          formData.reset('title', 'description', 'activity_type', 'manager', 'start', 'end', 'link', 'location', 'duration', 'color');
+          emit('updateItem', form.value);
+          emit('closeModal', true);
+        },
+      });
+    }
   });
-
-  emit('updateItem', form.value);
-
-  formData.put(`events/${id}`, {
-    onFinish: () => {
-      formData.reset('title', 'description', 'activity_type', 'manager', 'start', 'end', 'link', 'location', 'duration', 'color');
-    },
-  });
-
-  emit('closeModal', true);
 }
 
 function deleteEvent(id: number) {
@@ -97,16 +110,26 @@ function deleteEvent(id: number) {
     remember: false
   });
 
-  emit('deleteItem', id)
-
-  if (confirm('¿Estas seguro que deseas eliminar este evento?')) {
-    formData.delete(`events/${id}`, {
-      onFinish: () => {
-        formData.reset('title', 'description', 'activity_type', 'manager', 'start', 'end', 'link', 'location', 'duration', 'color');
-      },
-    });
-
-    emit('closeModal', true);
-  }
+  Swal.fire({
+    title: '¿Estás seguro?',
+    text: 'Esta acción no se puede deshacer',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar'
+  }).then((result) => {
+    if (result.isConfirmed) {
+      formData.delete(`events/${id}`, {
+        onFinish: () => {
+          formData.reset('title', 'description', 'activity_type', 'manager', 'start', 'end', 'link', 'location', 'duration', 'color');
+          emit('deleteItem', id)
+          emit('closeModal', true);
+        },
+      });
+    }
+  });
 }
+
 </script>
