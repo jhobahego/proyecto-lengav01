@@ -6,7 +6,8 @@
         <h1 class="font-bold text-6xl text-[#00447b] leading-tight text-center">
           Proyectos
         </h1>
-        <p class="text-[#00447b] font-medium text-2xl text-center opacity-75">Toda la información acerca de los proyectos
+        <p class="text-[#00447b] font-medium text-2xl text-center opacity-75">Toda la información acerca de los
+          proyectos
           llevados acabo por el semillero SUIS</p>
       </div>
       <div v-if="action === 'create'"
@@ -24,10 +25,11 @@
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
           <section class="max-w-5xl mx-auto mt-10">
 
-            <ProjectForm @show-modal="showModal" :action="action" v-if="action === 'create'"
-              :project="selectedProject" />
+            <CreateProject @add-item="onCreate" @show-modal="showModal" :action="action" v-if="action === 'create'"
+              :users="props.users" />
 
-            <EditProject @show-modal="showModal" :action="action" v-if="action === 'edit'" :project="selectedProject" />
+            <EditProject @update-item="onEdit" @show-modal="showModal" :action="action" v-if="action === 'edit'"
+              :project="selectedProject" :users="props.users" />
 
             <div v-if="projects.length === 0 && action === 'show'" class="text-center">
               <p>No hay proyectos registrados</p>
@@ -39,8 +41,8 @@
             </header>
             <div v-if="action === 'show'"
               class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center m-4">
-              <div v-for="project in projects" :key="project.id"
-                class="card border border-blue-500 shadow-md rounded-lg p-4 flex flex-col max-w-72 sm:max-w-full min-h-72">
+              <article v-for="project in projects" :key="project.id"
+                class="card border border-blue-500 shadow-md rounded-lg p-4 flex flex-col max-w-80 sm:max-w-full min-h-72">
                 <h2 class="text-2xl font-semibold mb-2">{{ project.title }}</h2>
                 <p class="text-gray-600">{{ project.description }}</p>
                 <div class="flex justify-between items-center my-4">
@@ -50,9 +52,9 @@
                 <div class="flex gap-x-2 justify-end self-start mt-auto">
                   <a :href="project.project_link" target="_blank" class="p-2 btn-submit text-white rounded">Visitar</a>
                   <button @click="editProject(project.id)" class="p-2 bg-yellow-500 text-white rounded">Editar</button>
-                  <button @click="deleteProject()" class="p-2 btn-delete text-white rounded">Eliminar</button>
+                  <button @click="deleteProject(project.id)" class="p-2 btn-delete text-white rounded">Eliminar</button>
                 </div>
-              </div>
+              </article>
             </div>
           </section>
         </div>
@@ -63,24 +65,12 @@
 
 <script setup lang="ts">
 import { ref, Ref, onMounted } from 'vue';
-import ProjectForm from '../Components/ProjectForm.vue';
-import EditProject from '../Components/EditProject.vue';
+import CreateProject from '../Components/Projects/CreateProject.vue';
+import EditProject from '../Components/Projects/EditProject.vue';
 import AppLayout from '../Layouts/AppLayout.vue';
+import { useForm } from '@inertiajs/vue3';
+import { type Project, type User } from '../types/types.d';
 
-interface Project {
-  id: number;
-  title: string;
-  description: string;
-  general_objectives: string[];
-  specific_objectives: string[];
-  portrait_url: string;
-  project_type: string;
-  manager: number;
-  start_date: string;
-  end_date: string;
-  project_status: string;
-  project_link: string;
-}
 
 type Action = 'create' | 'edit' | 'show';
 
@@ -88,15 +78,19 @@ const projects: Ref<Project[]> = ref([]);
 const action: Ref<Action> = ref('create');
 const selectedProject: Ref<Project> = ref(projects.value[0]);
 
-const props = defineProps({
-  projects: {
-    type: Array as () => Project[],
-    required: true,
-  },
-});
+const props = defineProps<{
+  users: User[];
+  projects: Project[];
+}>();
 
 function showModal(act: Action) {
   action.value = act;
+}
+
+function onCreate(project: Project) {
+  projects.value.push(project);
+  action.value = 'show';
+  window.location.reload();
 }
 
 function editProject(id: number) {
@@ -110,11 +104,32 @@ function editProject(id: number) {
   showModal('edit');
 }
 
-function deleteProject() {
-  console.log('delete project');
+function onEdit(project: Project) {
+  const index = projects.value.findIndex((p) => p.id === project.id);
+  if (index < 0) return;
+
+  projects.value[index] = project;
+  action.value = 'show';
+  window.location.reload();
 }
 
-onMounted(async () => {
+function deleteProject(id: number) {
+  const projectTodelete = projects.value.find((p) => p.id === id);
+  if (projectTodelete == null) return;
+
+  const form = useForm(projectTodelete);
+
+  if (confirm('¿Estás seguro de eliminar este proyecto?')) {
+    form.delete(`projects/${id}`, {
+      onFinish: () => {
+        form.reset('title', 'description', 'general_objectives', 'specific_objectives', 'project_type', 'project_status', 'manager', 'start_date', 'end_date', 'project_link', 'portrait_url');
+        window.location.reload();
+      },
+    });
+  }
+}
+
+onMounted(() => {
   projects.value = props.projects;
   action.value = 'show';
 });
