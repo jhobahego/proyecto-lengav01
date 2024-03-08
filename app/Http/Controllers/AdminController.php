@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -29,7 +30,9 @@ class AdminController extends Controller
             ];
         });
 
-        return inertia('Admin/AdminView', compact('events'));
+        $users = User::all();
+
+        return inertia('Admin/AdminView', compact(['events', 'users']));
     }
 
     /**
