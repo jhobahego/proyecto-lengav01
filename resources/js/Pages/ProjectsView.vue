@@ -10,7 +10,7 @@
           proyectos
           llevados acabo por el semillero SUIS</p>
       </div>
-      <div v-if="action === 'create'"
+      <div v-else-if="action === 'create'"
         class="overflow-hidden h-48 w-full bg-cover flex flex-col items-center justify-center">
         <h1 class="font-bold text-4xl mb-2 text-[#00447b] leading-tight text-center">
           Inscripción de Proyectos
@@ -25,10 +25,10 @@
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
           <section class="max-w-5xl mx-auto mt-10">
 
-            <CreateProject @add-item="onCreate" @show-modal="showModal" :action="action" v-if="action === 'create'"
+            <CreateProject @add-item="onCreate" @show-modal="showModal" v-if="action === 'create'"
               :users="props.users" />
 
-            <EditProject @update-item="onEdit" @show-modal="showModal" :action="action" v-if="action === 'edit'"
+            <EditProject @update-item="onEdit" @show-modal="showModal" v-if="action === 'edit'"
               :project="selectedProject" :users="props.users" />
 
             <div v-if="projects.length === 0 && action === 'show'" class="text-center">
@@ -37,24 +37,12 @@
 
             <header v-if="action === 'show'" class="flex items-center justify-between p-4 m-4 mb-2">
               <h1 class="text-4xl font-bold">Proyectos</h1>
-              <button @click="showModal('create')" class="p-3 btn-submit text-white rounded-lg">Crear proyecto</button>
+              <button @click="showModal('create')"
+                class="p-3 bg-[#00447b] cursor-pointer border-none text-white rounded-lg">Crear proyecto</button>
             </header>
             <div v-if="action === 'show'"
               class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center m-4">
-              <article v-for="project in projects" :key="project.id"
-                class="card border border-blue-500 shadow-md rounded-lg p-4 flex flex-col max-w-80 sm:max-w-full min-h-72">
-                <h2 class="text-2xl font-semibold mb-2">{{ project.title }}</h2>
-                <p class="text-gray-600">{{ project.description }}</p>
-                <div class="flex justify-between items-center my-4">
-                  <span class="text-sm">{{ project.project_type }}</span>
-                  <span class="text-sm">{{ project.project_status }}</span>
-                </div>
-                <div class="flex gap-x-2 justify-end self-start mt-auto">
-                  <a :href="project.project_link" target="_blank" class="p-2 btn-submit text-white rounded">Visitar</a>
-                  <button @click="editProject(project.id)" class="p-2 bg-yellow-500 text-white rounded">Editar</button>
-                  <button @click="deleteProject(project.id)" class="p-2 btn-delete text-white rounded">Eliminar</button>
-                </div>
-              </article>
+              <ListOfProjects :projects="projects" @on-click-edit="editProject" />
             </div>
           </section>
         </div>
@@ -63,25 +51,26 @@
   </AppLayout>
 </template>
 
+
 <script setup lang="ts">
 import { ref, Ref, onMounted } from 'vue';
 import CreateProject from '../Components/Projects/CreateProject.vue';
+import ListOfProjects from '../Components/Projects/ListOfProject.vue';
 import EditProject from '../Components/Projects/EditProject.vue';
 import AppLayout from '../Layouts/AppLayout.vue';
-import { useForm } from '@inertiajs/vue3';
 import { type Project, type User } from '../types/types.d';
-
-
-type Action = 'create' | 'edit' | 'show';
-
-const projects: Ref<Project[]> = ref([]);
-const action: Ref<Action> = ref('create');
-const selectedProject: Ref<Project> = ref(projects.value[0]);
+import Swal from 'sweetalert2';
 
 const props = defineProps<{
   users: User[];
   projects: Project[];
 }>();
+
+type Action = 'create' | 'edit' | 'show';
+
+const projects: Ref<Project[]> = ref(props.projects);
+const action: Ref<Action> = ref('show');
+const selectedProject: Ref<Project> = ref(projects.value[0]);
 
 function showModal(act: Action) {
   action.value = act;
@@ -90,7 +79,10 @@ function showModal(act: Action) {
 function onCreate(project: Project) {
   projects.value.push(project);
   action.value = 'show';
-  window.location.reload();
+
+  Swal.fire('Éxito', 'El proyecto se ha creado correctamente', 'success').then(() => {
+    window.location.reload();
+  });
 }
 
 function editProject(id: number) {
@@ -110,52 +102,10 @@ function onEdit(project: Project) {
 
   projects.value[index] = project;
   action.value = 'show';
-  window.location.reload();
-}
-
-function deleteProject(id: number) {
-  const projectTodelete = projects.value.find((p) => p.id === id);
-  if (projectTodelete == null) return;
-
-  const form = useForm(projectTodelete);
-
-  if (confirm('¿Estás seguro de eliminar este proyecto?')) {
-    form.delete(`projects/${id}`, {
-      onFinish: () => {
-        form.reset('title', 'description', 'general_objectives', 'specific_objectives', 'project_type', 'project_status', 'manager', 'start_date', 'end_date', 'project_link', 'portrait_url');
-        window.location.reload();
-      },
-    });
-  }
 }
 
 onMounted(() => {
   projects.value = props.projects;
-  action.value = 'show';
 });
 
 </script>
-
-<style scoped>
-:root {
-  --blue-principal: #00447b;
-  --red-principal: #dc3545;
-  --max-width: 800px;
-}
-
-.card {
-  background: linear-gradient(to bottom, rgba(245, 245, 245, 0.5), rgba(26, 108, 141, 0.87));
-}
-
-.btn-submit {
-  background: #00447b;
-  border: none;
-  cursor: pointer;
-}
-
-.btn-delete {
-  background: #dc3545;
-  border: none;
-  cursor: pointer;
-}
-</style>
