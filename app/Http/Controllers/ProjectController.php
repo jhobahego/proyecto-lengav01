@@ -45,7 +45,8 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
-        //
+        $manager = User::find($project->manager);
+        return inertia('Projects/ProjectShow', compact('project', 'manager'));
     }
 
     /**
