@@ -64,7 +64,8 @@
 
       <label for="manager" class="flex flex-col w-full mb-3">Responsable
         <select v-model="form.manager" class="rounded-lg mt-1" id="manager" name="manager">
-          <option v-for="user in props.users" :key="user.id" :value="user.id">{{ user.name }}</option>
+          <option v-for="user in props.users" :key="user.id" :value="user.id" :selected="user.id === form.manager">{{
+      user.name }}</option>
         </select>
       </label>
 
@@ -97,20 +98,6 @@ import { useForm } from '@inertiajs/vue3';
 import { type Project, type User } from '@/types/types';
 import Swal from 'sweetalert2';
 
-let formData = useForm({
-  id: 0,
-  title: '',
-  description: '',
-  general_objectives: [''],
-  specific_objectives: [''],
-  project_type: 'INVESTIGACION',
-  project_status: 'PENDIENTE',
-  manager: 0,
-  start_date: '',
-  end_date: '',
-  project_link: '',
-  portrait_url: ''
-});
 
 const form = ref<Project>({
   id: 0,
@@ -120,7 +107,7 @@ const form = ref<Project>({
   specific_objectives: [''],
   project_type: 'INVESTIGACION',
   project_status: 'PENDIENTE',
-  manager: 0,
+  manager: 1,
   start_date: '',
   end_date: '',
   project_link: '',
@@ -168,9 +155,11 @@ function submitForm() {
     cancelButtonText: 'Cancelar'
   }).then((result) => {
     if (result.isConfirmed) {
-      useForm(form.value).post('projects', {
+      const formData = useForm({ ...form.value });
+      formData.post('projects', {
         onFinish: () => {
           formData.reset('title', 'description', 'general_objectives', 'specific_objectives', 'project_type', 'project_status', 'manager', 'start_date', 'end_date', 'project_link', 'portrait_url');
+          emit('addItem', form.value);
           emit('showModal', 'show');
         },
       });
@@ -219,13 +208,5 @@ function removeSpecificObjective() {
   background: #dc3545;
   border: none;
   cursor: pointer;
-}
-
-.input_error {
-  border: 1px solid #dc3545;
-}
-
-.label_error {
-  color: #dc3545;
 }
 </style>
