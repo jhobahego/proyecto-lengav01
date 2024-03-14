@@ -168,7 +168,7 @@ import CreateEvent from '../../Components/Events/CreateEvent.vue';
 import { type User, type Event, Project } from '../../types/types.d';
 import Swal from 'sweetalert2';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
-import CreateUser from '@/Components/users/CreateUser.vue';
+import CreateUser from '../../Components/users/CreateUser.vue';
 
 
 const props = defineProps<{
@@ -306,6 +306,7 @@ function editUser(id: number) {
 
 function deleteUser(id: number) {
   const userToDelete = users.value.find((u: User) => u.id === id);
+  if (userToDelete == undefined) return;
 
   Swal.fire({
     title: '¿Estás seguro?',
@@ -340,7 +341,7 @@ function siteSettings() {
 onMounted(() => {
   events.value = props.events.map((event: Event) => {
     event.start = formatDate(event.start);
-    event.end = formatDate(event.end);
+    event.end = event.end != undefined ? formatDate(event.end) : undefined;
     return event;
   });
 });
