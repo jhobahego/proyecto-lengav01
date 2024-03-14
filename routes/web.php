@@ -5,6 +5,8 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\UserController;
+use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -39,10 +41,21 @@ $middlewareGroup = [
     'verified',
 ];
 
+$middlewareGroupAdmin = [
+    'auth:sanctum',
+    config('jetstream.auth_session'),
+    'verified',
+    'role:MANAGER',
+];
+
 Route::middleware($middlewareGroup)->group(function () {
     Route::resource('/news', NewsController::class);
     Route::resource('/projects', ProjectController::class);
-    Route::resource('/admin', AdminController::class);
     Route::resource('/about', AboutController::class);
     Route::resource('/events', EventController::class);
+});
+
+Route::middleware($middlewareGroupAdmin)->group(function () {
+    Route::resource('/admin', AdminController::class);
+    Route::resource('/users', UserController::class);
 });
