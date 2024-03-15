@@ -17,6 +17,7 @@
           class="edit-form opacity-85 p-10 border border-blue-500 rounded-md flex flex-col items-center gap-y-3" />
 
         <CreateUser v-if="submitAction === 'createUser'" @close-modal="closeModal" />
+        <EditUser v-if="submitAction === 'editUser'" :user="selectedUser" @close-modal="closeModal" />
 
         <CreateEvent v-if="submitAction === 'createEvent'" :users="props.users" :date-selected="selectedDate"
           @close-modal="closeModal" @add-item="addItem"
@@ -169,6 +170,7 @@ import { type User, type Event, Project } from '../../types/types.d';
 import Swal from 'sweetalert2';
 import { Link, useForm, usePage } from '@inertiajs/vue3';
 import CreateUser from '../../Components/users/CreateUser.vue';
+import EditUser from '../../Components/users/EditUser.vue';
 
 
 const props = defineProps<{
@@ -181,9 +183,10 @@ type ComponentName = 'AdminView' | 'UserView' | 'ProjectView' | 'ConfigView';
 
 const events: Ref<Event[]> = ref(props.events);
 const selectedEvent = ref<Event>();
+const selectedUser = ref<User>();
 const shomModal = ref(false);
 const selectedDate = ref('');
-const submitAction = ref<'createEvent' | 'editEvent' | 'createUser' | 'createEvent'>('createEvent')
+const submitAction = ref<'createEvent' | 'editEvent' | 'createUser' | 'editUser'>('createEvent')
 
 const componentToRender = ref<ComponentName>('AdminView');
 
@@ -298,10 +301,15 @@ const filteredUsers = computed(() => {
 });
 
 function editUser(id: number) {
-  alert('TODO: Implementar la edición de usuarios');
-  // const userToEdit = users.value.find((u: User) => u.id === id);
-  // submitAction.value = 'editUser';
-  // shomModal.value = true;
+  const user = users.value.find((u: User) => u.id === id);
+  if (user == undefined) {
+    Swal.fire('Error', 'El usuario no existe', 'error');
+    return;
+  }
+
+  selectedUser.value = user;
+  submitAction.value = 'editUser';
+  shomModal.value = true;
 }
 
 function deleteUser(id: number) {
