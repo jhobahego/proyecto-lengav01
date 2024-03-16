@@ -8,8 +8,8 @@
       <span class="text-sm">{{ project.project_status }}</span>
     </div>
     <div class="flex gap-x-2 justify-center mt-auto">
-      <a :href="project.project_link" target="_blank"
-        class="p-2 bg-[#00447b] cursor-pointer border-none text-white rounded">Visitar</a>
+      <Link :href="`/projects/${project.id}`"
+        class="p-2 bg-[#00447b] cursor-pointer border-none text-white rounded">Visitar</Link>
       <button @click="editProject(project)" class="p-2 bg-yellow-500 text-white rounded">Editar</button>
       <button @click="deleteProject(project)"
         class="p-2 bg-[#dc3545] cursor-pointer border-none text-white rounded">Eliminar</button>
@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { Project } from '../../types/types';
-import { useForm } from '@inertiajs/vue3';
+import { useForm, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import Swal from 'sweetalert2';
 
