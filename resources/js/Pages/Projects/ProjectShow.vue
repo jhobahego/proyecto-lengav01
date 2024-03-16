@@ -13,6 +13,9 @@
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
           <section class="card max-w-4xl mx-auto my-10 border border-solid py-8 px-14 rounded-md">
+            <Modal :show="showModal" :max-width="'lg'" :closeable="true" @close="closeModal">
+              <EditProject :project="project" :users="users" @update-item="onProjectEdited" @show-modal="closeModal" />
+            </Modal>
             <h2 class="text-3xl md:text-5xl font-bold flex flex-col gap-y-2 text-center mb-2">
               {{ project.title }}
             </h2>
@@ -68,7 +71,9 @@
             </p>
 
             <div class="flex gap-x-2 justify-end self-start mt-auto">
-              <Link :href="route('admin.index')" class="p-2 bg-[#dc3545] cursor-pointer border-none text-white rounded">
+              <button @click="showModal = true"
+                class="p-2 bg-[#00447b] cursor-pointer border-none text-white rounded">Editar proyecto</button>
+              <Link :href="backUrl" class="p-2 bg-[#dc3545] cursor-pointer border-none text-white rounded">
               Volver atras</Link>
             </div>
           </section>
@@ -79,15 +84,25 @@
 </template>
 
 <script setup lang="ts">
-import AppLayout from '@/Layouts/AppLayout.vue';
-import { Project, User } from '@/types/types';
+import { computed, ref } from 'vue';
+import AppLayout from '../../Layouts/AppLayout.vue';
+import { Project, User } from '../../types/types';
 import { Link } from '@inertiajs/vue3';
+import Modal from '../../Components/Modal.vue';
+import EditProject from '../../Components/Projects/EditProject.vue';
+import Swal from 'sweetalert2';
 
 
-const { project, manager } = defineProps<{
+const { project, manager, users, previousUrl } = defineProps<{
   project: Project
   manager: User
+  users: User[]
+  previousUrl: string
 }>();
+
+const backUrl = computed(() => {
+  return previousUrl === window.location.href ? '/projects' : previousUrl;
+});
 
 const generalObjectives = JSON.parse(JSON.stringify(project.general_objectives));
 const specificObjectives = JSON.parse(JSON.stringify(project.specific_objectives));
@@ -98,6 +113,21 @@ function formatDates(date: string) {
   const month = String(newDate.getMonth() + 1).padStart(2, '0');
   const day = String(newDate.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+const showModal = ref(false);
+
+function closeModal(val: boolean) {
+  showModal.value = val;
+}
+
+function onProjectEdited(project: Project) {
+  Swal.fire({
+    title: 'Proyecto editado',
+    html: `El proyecto <strong>${project.title}</strong> ha sido editado con exito`,
+    icon: 'success',
+    confirmButtonText: 'Aceptar'
+  })
 }
 </script>
 

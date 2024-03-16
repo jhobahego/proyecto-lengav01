@@ -3,7 +3,10 @@
     <header>
       <h1 class="text-4xl font-bold text-center">Edición de proyecto</h1>
     </header>
-    <form @submit.prevent="submitForm(project.id)" class="form-projects rounded-lg flex flex-col items-center p-7">
+    <form @submit.prevent="submitForm(project.id)"
+      class="form-projects rounded-lg flex flex-col items-center p-7 relative">
+      <button type="button" @click="emit('showModal', false)"
+        class="fixed bg-[#dc3545] cursor-pointer text-white p-2 mb-3 rounded-lg size-10 top-5 right-5">X</button>
       <label for="title" class="flex flex-col w-full mb-3">Titulo
         <input v-model="formData.title" type="text" class="rounded-lg mt-1"
           placeholder="Creación de un videojuego 2d para mejorar los procesos de aprendizaje" id="title" name="title">
@@ -89,10 +92,10 @@
           name="portrait_url">
       </label>
 
-      <button type="submit" class="bg-blue-700 text-white rounded-md mt-3 p-3 font-bold text-lg">Editar
+      <button type="submit" class="w-[80%] mx-auto bg-blue-700 text-white rounded-md mt-3 p-3 font-bold text-lg">Editar
         proyecto</button>
-      <button type="button" @click="emit('showModal', 'show')"
-        class="cursor-pointer border-none bg-[#dc3545] text-white p-2 m-3 rounded-md">Cancelar
+      <button type="button" @click="emit('showModal', false)"
+        class="w-[80%] mx-auto cursor-pointer border-none bg-[#dc3545] text-white p-2 mb-3 rounded-md">Cancelar
         edición</button>
     </form>
   </section>
@@ -108,6 +111,11 @@ const props = defineProps<{
   users: User[];
 }>();
 
+const emit = defineEmits({
+  showModal: (val: boolean) => val,
+  updateItem: (val: Project) => val,
+});
+
 let formData = ref<Project>({
   ...props.project,
   end_date: formatDates(props.project.end_date),
@@ -117,26 +125,18 @@ let formData = ref<Project>({
 const projectTypes = ref(['INNOVACIÓN', 'INVESTIGACIÓN', 'EXTENSIÓN', 'EMPRENDIMIENTO']);
 const projectStatus = ref(["EN_CURSO", "FINALIZADO", "PENDIENTE"]);
 
-type Action = 'create' | 'edit' | 'show';
-
-
-const emit = defineEmits({
-  showModal: (act: Action) => true,
-  updateItem: (val: Project) => val,
-});
-
 function submitForm(id: number) {
   const form = useForm(formData.value);
 
   emit('updateItem', formData.value)
 
-  form.put(`projects/${id}`), {
+  form.put(route('projects.update', id)), {
     onFinish: () => {
       form.reset('title', 'description', 'general_objectives', 'specific_objectives', 'project_type', 'project_status', 'manager', 'start_date', 'end_date', 'project_link', 'portrait_url');
     }
   };
 
-  emit('showModal', 'show');
+  emit('showModal', false);
 }
 
 function addGeneralObjective() {
@@ -168,8 +168,8 @@ function mapProjectToFormData(project: Project) {
   formData.value.general_objectives = JSON.parse(general_objectives);
   formData.value.specific_objectives = JSON.parse(specific_objectives);
 
-  formData.value.start_date = project.start_date !== null ? formatDates(project.start_date) : null;
-  formData.value.end_date = project.end_date !== null ? formatDates(project.end_date) : null;
+  formData.value.start_date = project.start_date !== null ? formatDates(project.start_date) : '';
+  formData.value.end_date = project.end_date !== null ? formatDates(project.end_date) : '';
 }
 
 function formatDates(date: string) {
@@ -193,10 +193,5 @@ onMounted(() => {
   gap: 14px;
   border: 1px solid #09f;
   background: linear-gradient(to bottom, rgba(245, 245, 245, 0.5), rgba(26, 108, 141, 0.87));
-}
-
-.form-projects>button {
-  width: 80%;
-  margin: 0 auto;
 }
 </style>
