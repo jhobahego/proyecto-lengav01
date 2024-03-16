@@ -45,8 +45,9 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
+        $users = User::all();
         $manager = User::find($project->manager);
-        return inertia('Projects/ProjectShow', compact('project', 'manager'));
+        return inertia('Projects/ProjectShow', compact('project', 'manager', 'users'))->with('previousUrl', url()->previous());
     }
 
     /**
@@ -58,7 +59,6 @@ class ProjectController extends Controller
         $request['specific_objectives'] = json_encode($request['specific_objectives']);
 
         $project->update($request->all());
-        return redirect()->route('projects.index');
     }
 
     /**
