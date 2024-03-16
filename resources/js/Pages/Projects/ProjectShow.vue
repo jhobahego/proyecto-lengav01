@@ -14,7 +14,7 @@
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
           <section class="card max-w-4xl mx-auto my-10 border border-solid py-8 px-14 rounded-md">
             <Modal :show="showModal" :max-width="'lg'" :closeable="true" @close="closeModal">
-              <EditProject :project="project" :users="users" @update-item="onProjectEdited" @show-modal="closeModal" />
+              <EditProject :project="project" :users="users" @show-modal="closeModal" />
             </Modal>
             <h2 class="text-3xl md:text-5xl font-bold flex flex-col gap-y-2 text-center mb-2">
               {{ project.title }}
@@ -121,14 +121,6 @@ function closeModal(val: boolean) {
   showModal.value = val;
 }
 
-function onProjectEdited(project: Project) {
-  Swal.fire({
-    title: 'Proyecto editado',
-    html: `El proyecto <strong>${project.title}</strong> ha sido editado con exito`,
-    icon: 'success',
-    confirmButtonText: 'Aceptar'
-  })
-}
 </script>
 
 <style scoped>

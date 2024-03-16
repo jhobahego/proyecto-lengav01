@@ -105,6 +105,7 @@
 import { onMounted, ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
 import { type User, type Project } from '../../types/types.d';
+import Swal from 'sweetalert2';
 
 const props = defineProps<{
   project: Project;
@@ -128,15 +129,29 @@ const projectStatus = ref(["EN_CURSO", "FINALIZADO", "PENDIENTE"]);
 function submitForm(id: number) {
   const form = useForm(formData.value);
 
-  emit('updateItem', formData.value)
-
-  form.put(route('projects.update', id)), {
-    onFinish: () => {
-      form.reset('title', 'description', 'general_objectives', 'specific_objectives', 'project_type', 'project_status', 'manager', 'start_date', 'end_date', 'project_link', 'portrait_url');
+  Swal.fire({
+    title: '¿Estas seguro?',
+    text: 'Estas a punto de editar un proyecto',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Si, editar',
+    cancelButtonText: 'Cancelar',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      form.put(`/projects/${id}`, {
+        preserveScroll: true,
+        onSuccess: () => {
+          Swal.fire({
+            title: 'Proyecto editado',
+            html: `El proyecto con id ${id} ha sido editado con éxito`,
+            icon: 'success',
+            confirmButtonText: 'Ok'
+          });
+          emit('showModal', false);
+        }
+      });
     }
-  };
-
-  emit('showModal', false);
+  });
 }
 
 function addGeneralObjective() {
