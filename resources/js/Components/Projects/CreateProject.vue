@@ -3,7 +3,9 @@
     <header>
       <h1 class="text-4xl font-bold text-center">Creación de proyectos</h1>
     </header>
-    <form @submit.prevent="submitForm" class="form-projects rounded-lg flex flex-col items-center p-7">
+    <form @submit.prevent="submitForm" class="form-projects rounded-lg flex flex-col items-center p-7 relative">
+      <button type="button" @click="emit('showModal', false)"
+        class="fixed bg-[#dc3545] cursor-pointer text-white p-2 mb-3 rounded-lg size-10 top-5 right-5">X</button>
       <label for="title" class="flex flex-col w-full mb-3">Titulo
         <input v-model="form.title" type="text" class="rounded-lg mt-1"
           placeholder="Creación de un videojuego 2d para mejorar los procesos de aprendizaje" id="title" name="title">
@@ -85,8 +87,10 @@
         <input v-model="form.portrait_url" type="text" class="rounded-lg mt-1" id="portrait_url" name="portrait_url">
       </label>
 
-      <button type="submit" class="bg-blue-700 text-white rounded-md mt-3 p-3 font-bold text-lg">Crear proyecto</button>
-      <button type="button" @click="emit('showModal', 'show')" class="btn-delete text-white p-2 m-3 rounded-md">Cancelar
+      <button type="submit" class=" w-[80%] mx-auto bg-blue-700 text-white rounded-md mt-3 p-3 font-bold text-lg">Crear
+        proyecto</button>
+      <button type="button" @click="emit('showModal', false)"
+        class="w-[80%] bg-[#dc3545] mx-auto text-white p-2 mb-3 rounded-md">Cancelar
         formulario</button>
     </form>
   </section>
@@ -95,7 +99,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useForm } from '@inertiajs/vue3';
-import { type Project, type User } from '@/types/types';
+import { type Project, type User } from '../../types/types';
 import Swal from 'sweetalert2';
 
 
@@ -117,14 +121,12 @@ const form = ref<Project>({
 const projectTypes = ref(['INNOVACION', 'INVESTIGACION', 'EXTENSION', 'EMPRENDIMIENTO']);
 const projectStatus = ref(["EN_CURSO", "FINALIZADO", "PENDIENTE"]);
 
-type Action = 'create' | 'edit' | 'show';
-
 const props = defineProps<{
   users: User[];
 }>();
 
 const emit = defineEmits({
-  showModal: (act: Action) => act,
+  showModal: (val: boolean) => val,
   addItem: (val: Project) => val,
 });
 
@@ -160,7 +162,7 @@ function submitForm() {
         onFinish: () => {
           formData.reset('title', 'description', 'general_objectives', 'specific_objectives', 'project_type', 'project_status', 'manager', 'start_date', 'end_date', 'project_link', 'portrait_url');
           emit('addItem', form.value);
-          emit('showModal', 'show');
+          emit('showModal', false);
         },
       });
     }
@@ -197,11 +199,6 @@ function removeSpecificObjective() {
   gap: 14px;
   border: 1px solid #09f;
   background: linear-gradient(to bottom, rgba(245, 245, 245, 0.5), rgba(26, 108, 141, 0.87));
-}
-
-.form-projects>button {
-  width: 80%;
-  margin: 0 auto;
 }
 
 .btn-delete {

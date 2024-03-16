@@ -24,24 +24,25 @@
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg">
           <section class="max-w-5xl mx-auto mt-10">
+            <Modal :show="modal" :max-width="'lg'" :closeable="true" @close="showModal">
+              <CreateProject @add-item="onCreate" @show-modal="showModal" v-if="action === 'create'"
+                :users="props.users" />
 
-            <CreateProject @add-item="onCreate" @show-modal="showModal" v-if="action === 'create'"
-              :users="props.users" />
-
-            <EditProject @update-item="onEdit" @show-modal="showModal" v-if="action === 'edit'"
-              :project="selectedProject" :users="props.users" />
+              <EditProject @update-item="onEdit" @show-modal="showModal" v-if="action === 'edit'"
+                :project="selectedProject" :users="props.users" />
+            </Modal>
 
             <div v-if="projects.length === 0 && action === 'show'" class="text-center">
               <p>No hay proyectos registrados</p>
             </div>
 
-            <header v-if="action === 'show'" class="flex items-center justify-between p-4 m-4 mb-2">
+            <header class="flex items-center justify-between p-4 m-4 mb-2">
               <h1 class="text-4xl font-bold">Proyectos</h1>
-              <button @click="showModal('create')"
-                class="p-3 bg-[#00447b] cursor-pointer border-none text-white rounded-lg">Crear proyecto</button>
+              <button @click="onClickCreate"
+                class="p-3 bg-[#00447b] cursor-pointer border-none text-white rounded-lg">Crear
+                proyecto</button>
             </header>
-            <div v-if="action === 'show'"
-              class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center m-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center m-4">
               <ListOfProjects :projects="projects" @on-click-edit="editProject" />
             </div>
           </section>
@@ -58,6 +59,7 @@ import CreateProject from '../Components/Projects/CreateProject.vue';
 import ListOfProjects from '../Components/Projects/ListOfProject.vue';
 import EditProject from '../Components/Projects/EditProject.vue';
 import AppLayout from '../Layouts/AppLayout.vue';
+import Modal from '../Components/Modal.vue';
 import { type Project, type User } from '../types/types.d';
 import Swal from 'sweetalert2';
 
@@ -66,23 +68,32 @@ const props = defineProps<{
   projects: Project[];
 }>();
 
-type Action = 'create' | 'edit' | 'show';
-
 const projects: Ref<Project[]> = ref(props.projects);
-const action: Ref<Action> = ref('show');
 const selectedProject: Ref<Project> = ref(projects.value[0]);
 
-function showModal(act: Action) {
-  action.value = act;
+const action = ref<'create' | 'edit'>();
+const modal = ref(false);
+
+function showModal(val: boolean) {
+  modal.value = val;
+}
+
+function onClickCreate() {
+  action.value = 'create';
+  modal.value = true;
 }
 
 function onCreate(project: Project) {
   projects.value.push(project);
-  action.value = 'show';
 
-  Swal.fire('Éxito', 'El proyecto se ha creado correctamente', 'success').then(() => {
-    window.location.reload();
-  });
+  Swal.fire({
+    title: 'Proyecto creado',
+    text: 'El proyecto se ha creado con éxito',
+    icon: 'success',
+    confirmButtonText: 'Aceptar',
+  }).then(() => {
+    modal.value = false;
+  })
 }
 
 function editProject(id: number) {
@@ -93,7 +104,8 @@ function editProject(id: number) {
   }
 
   selectedProject.value = project;
-  showModal('edit');
+  modal.value = true;
+  action.value = 'edit';
 }
 
 function onEdit(project: Project) {
@@ -101,7 +113,6 @@ function onEdit(project: Project) {
   if (index < 0) return;
 
   projects.value[index] = project;
-  action.value = 'show';
 }
 
 onMounted(() => {
