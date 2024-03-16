@@ -7,7 +7,7 @@
       <span class="text-sm">{{ project.project_type }}</span>
       <span class="text-sm">{{ project.project_status }}</span>
     </div>
-    <div class="flex gap-x-2 justify-end self-start mt-auto">
+    <div class="flex gap-x-2 justify-center mt-auto">
       <a :href="project.project_link" target="_blank"
         class="p-2 bg-[#00447b] cursor-pointer border-none text-white rounded">Visitar</a>
       <button @click="editProject(project)" class="p-2 bg-yellow-500 text-white rounded">Editar</button>
@@ -18,9 +18,9 @@
 </template>
 
 <script setup lang="ts">
-import { Project } from '@/types/types';
+import { Project } from '../../types/types';
 import { useForm } from '@inertiajs/vue3';
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import Swal from 'sweetalert2';
 
 const props = defineProps<{
@@ -63,10 +63,6 @@ function deleteProject(project: Project) {
   });
 }
 
-
-onMounted(() => {
-  console.log(projects.value);
-})
 </script>
 
 <style scoped>
