@@ -138,8 +138,8 @@ function submitForm() {
       <ul>
         <li><strong>Titulo:</strong> ${form.value.title}</li>
         <li><strong>Descripcion:</strong> ${form.value.description}</li>
-        <li><strong>Objetivos generales:</strong> ${form.value.general_objectives.join(', ')}</li>
-        <li><strong>Objetivos específicos:</strong> ${form.value.specific_objectives.join(', ')}</li>
+        <li><strong>Objetivos generales:</strong> ${form.value.general_objectives.join('| ')}</li>
+        <li><strong>Objetivos específicos:</strong> ${form.value.specific_objectives.join('| ')}</li>
         <li><strong>Tipo de proyecto:</strong> ${form.value.project_type}</li>
         <li><strong>Estado del proyecto:</strong> ${form.value.project_status}</li>
         <li><strong>Responsable:</strong> ${props.users.find(user => user.id === form.value.manager)?.name}</li>
