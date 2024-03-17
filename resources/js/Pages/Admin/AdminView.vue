@@ -90,7 +90,7 @@
             </form>
             <article v-for="project in filteredProjects">
               <Link :href="route('projects.show', project)"
-                class="flex flex-col md:flex-row items-center text-center py-3 md:text-left md:gap-x-4 md:px-6 md:justify-between hover:bg-slate-400/75 border-b border-gray-600/80">
+                class="flex flex-col md:flex-row items-center text-center py-3 sm:text-left md:gap-x-4 md:px-6 md:justify-between hover:bg-slate-400/75 border-b border-gray-600/80">
               <h2 class="text-lg md:text-2xl font-semibold text-pretty md:min-w-60 md:max-w-72 mb-2 leading-6">{{ project.title }}</h2>
               <div class="flex flex-col md:flex-row items-center md:gap-x-8">
                 <p class="text-gray-600 text-sm md:text-base">Tipo: {{ project.project_type }}</p>
