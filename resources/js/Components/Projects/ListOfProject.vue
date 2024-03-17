@@ -1,20 +1,13 @@
 <template>
-  <article v-for="project in projects" :key="project.id"
-    class="card border border-blue-500 shadow-md rounded-lg p-4 flex flex-col max-w-80 sm:max-w-full min-h-72">
-    <h2 class="text-2xl font-semibold mb-2">{{ project.title }}</h2>
-    <p class="text-gray-600">{{ project.description }}</p>
-    <div class="flex justify-between items-center my-4">
-      <span class="text-sm">{{ project.project_type }}</span>
-      <span class="text-sm">{{ project.project_status }}</span>
-    </div>
-    <div class="flex gap-x-2 justify-center mt-auto">
-      <Link :href="`/projects/${project.id}`"
-        class="p-2 bg-[#00447b] cursor-pointer border-none text-white rounded">Visitar</Link>
-      <button @click="editProject(project)" class="p-2 bg-yellow-500 text-white rounded">Editar</button>
-      <button @click="deleteProject(project)"
-        class="p-2 bg-[#dc3545] cursor-pointer border-none text-white rounded">Eliminar</button>
-    </div>
-  </article>
+  <Link v-for="project in projects" :key="project.id" :href="`/projects/${project.id}`"
+    class="card w-[80%] md:w-full border text-black border-blue-500 shadow-md rounded-lg p-4 flex flex-col min-h-72">
+  <h2 class="text-xl md:text-2xl font-semibold mb-2">{{ project.title }}</h2>
+  <p class="text-base md:text-lg text-gray-600">{{ project.description }}</p>
+  <div class="flex justify-between items-center my-4 gap-x-3">
+    <span class="text-xs lg:text-base">{{ project.project_type }}</span>
+    <span class="text-xs lg:text-base">{{ project.project_status }}</span>
+  </div>
+  </Link>
 </template>
 
 <script setup lang="ts">
