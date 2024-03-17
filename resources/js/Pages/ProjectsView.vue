@@ -36,14 +36,14 @@
               <p>No hay proyectos registrados</p>
             </div>
 
-            <header class="flex items-center justify-between p-4 m-4 mb-2">
-              <h1 class="text-4xl font-bold">Proyectos</h1>
+            <header class="flex items-center justify-between p-4 m-4 mb-2 gap-x-4 sm:gap-x-6">
+              <h1 class="text-3xl sm:text-4xl font-bold">Proyectos</h1>
               <button @click="onClickCreate"
-                class="p-3 bg-[#00447b] cursor-pointer border-none text-white rounded-lg">Crear
+                class="text-xs sm:text-xl md:font-bold p-2 md:p-3 bg-[#00447b] sm:w-auto cursor-pointer border-none text-white rounded-lg">Crear
                 proyecto</button>
             </header>
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 justify-items-center m-4">
-              <ListOfProjects :projects="projects" @on-click-edit="editProject" />
+              <ListOfProjects :projects="projects" />
             </div>
           </section>
         </div>
@@ -93,19 +93,8 @@ function onCreate(project: Project) {
     confirmButtonText: 'Aceptar',
   }).then(() => {
     modal.value = false;
+    window.location.reload();
   })
-}
-
-function editProject(id: number) {
-  const project = projects.value.find((p) => p.id === id);
-  if (!project) {
-    alert('No se encontró el proyecto');
-    return;
-  }
-
-  selectedProject.value = project;
-  modal.value = true;
-  action.value = 'edit';
 }
 
 function onEdit(project: Project) {
