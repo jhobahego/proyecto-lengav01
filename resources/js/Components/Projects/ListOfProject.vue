@@ -4,8 +4,8 @@
   <h2 class="text-xl md:text-2xl font-semibold mb-2">{{ project.title }}</h2>
   <p class="text-base md:text-lg text-gray-600">{{ project.description }}</p>
   <div class="flex justify-between items-center my-4 gap-x-3">
-    <span class="text-xs lg:text-base">{{ project.project_type }}</span>
-    <span class="text-xs lg:text-base">{{ project.project_status }}</span>
+    <span class="text-xs">{{ project.project_type }}</span>
+    <span class="text-xs">{{ project.project_status }}</span>
   </div>
   </Link>
 </template>
